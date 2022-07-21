@@ -14,6 +14,12 @@ services:
       - SPRING_DATASOURCE_USERNAME=postgres
       - SPRING_DATASOURCE_PASSWORD=postgres
       - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - job1.enabled=false
+      - job2.enabled=true
+      - job2.random-lock.enabled=false
+      - lock-provider.keep-alive.enabled=true
+      - lockAtMostFor=30
+      - jobs.delay=60
 
   db:
     image: 'postgres:13.1-alpine'

@@ -1,16 +1,25 @@
 package com.example.scheduling.taskscheduler;
 
 import com.example.scheduling.tasks.Worker;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
+import java.time.Instant;
 import java.util.concurrent.TimeUnit;
+import lombok.extern.slf4j.Slf4j;
+import net.javacrumbs.shedlock.core.LockingTaskExecutor;
 import net.javacrumbs.shedlock.spring.annotation.SchedulerLock;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+import org.springframework.core.env.Environment;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Component;
 
+@Slf4j
+@EnableAsync
 @Component
+@ConditionalOnProperty(value = "job1.enabled", matchIfMissing = true, havingValue = "true")
 public class SpringTaskScheduler {
 
     /*@Autowired
@@ -21,6 +30,13 @@ public class SpringTaskScheduler {
 
     @Autowired
     Worker worker;
+
+    @Autowired
+    @Qualifier("customLockingTaskExecutor")
+    LockingTaskExecutor customLockingTaskExecutor;
+
+    @Value("${jobs.delay:30}")
+    int jobDelay;
 
     /*@Scheduled(fixedDelay = 1000)
     public void scheduleTask() throws InterruptedException {
@@ -37,11 +53,11 @@ public class SpringTaskScheduler {
         System.out.println("Task completed:" + Thread.currentThread().getName());
     }*/
 
-    @Scheduled(fixedRate = 10000)
-    @SchedulerLock(name = "task1" ,lockAtLeastFor = "30s" , lockAtMostFor = "120s" )
-    public void task1() {
-        System.out.println("Submitting tasks :" + Thread.currentThread().getName());
+    @Async
+    @Scheduled(fixedRateString = "${rate:10000}")
+    @SchedulerLock(name = "task1", lockAtMostFor = "${lockAtMostFor:120}s")
+    public void task() throws InterruptedException {
+        log.info("Submitting task for job1 : {}, time: {}", Thread.currentThread().getName(), Instant.now());
+        TimeUnit.SECONDS.sleep(jobDelay);
     }
-
-
 }
