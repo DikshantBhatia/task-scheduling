@@ -5,7 +5,6 @@ services:
     image: 'task-scheduler:latest'
     build:
       context: .
-
     container_name: task-scheduler
     depends_on:
       - db
@@ -20,6 +19,19 @@ services:
       - lock-provider.keep-alive.enabled=true
       - lockAtMostFor=30
       - jobs.delay=60
+
+  task-scheduler-2:
+    image: 'task-scheduler:latest'
+    build:
+      context: .
+    container_name: task-scheduler-2
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/testdb
+      - SPRING_DATASOURCE_USERNAME=postgres
+      - SPRING_DATASOURCE_PASSWORD=postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
 
   db:
     image: 'postgres:13.1-alpine'
